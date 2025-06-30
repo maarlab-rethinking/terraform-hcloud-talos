@@ -9,7 +9,8 @@ output "kubeconfig" {
 }
 
 output "talos_client_configuration" {
-  value = data.talos_client_configuration.this
+  value     = data.talos_client_configuration.this
+  sensitive = true
 }
 
 output "talos_machine_configurations_control_plane" {
