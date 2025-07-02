@@ -71,6 +71,16 @@ locals {
           ]
         }
         registries = var.registries
+        files = [
+          {
+            path    = "/etc/cri/conf.d/20-customization.part"
+            op      = "create"
+            content = <<-EOT
+[plugins."io.containerd.cri.v1.images"]
+  discard_unpacked_layers = false
+EOT
+          }
+        ]
       }
       cluster = {
         network = {

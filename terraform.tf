@@ -31,11 +31,23 @@ terraform {
       source  = "hashicorp/tls"
       version = ">= 4.0.6"
     }
+
+    kubernetes = {
+      source  = "hashicorp/kubernetes"
+      version = ">= 2.31.0"
+    }
   }
 }
 
 provider "hcloud" {
   token = var.hcloud_token
+}
+
+provider "kubernetes" {
+  host                   = local.kubeconfig_data.host
+  client_certificate     = local.kubeconfig_data.client_certificate
+  client_key             = local.kubeconfig_data.client_key
+  cluster_ca_certificate = local.kubeconfig_data.cluster_ca_certificate
 }
 
 provider "helm" {

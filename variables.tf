@@ -407,6 +407,12 @@ variable "hcloud_ccm_version" {
   description = "The version of the Hetzner Cloud Controller Manager to deploy. If not set, the latest version will be used."
 }
 
+variable "spegel_version" {
+  type        = string
+  default     = null
+  description = "The version of the Spegel to deploy. If not set, the latest version will be used."
+}
+
 variable "disable_talos_coredns" {
   type        = bool
   default     = false
