@@ -1,67 +1,54 @@
 # Retrieve the public IP address of the current machine if the firewall should be opened for the current IP
 data "http" "personal_ipv4" {
-  count = var.firewall_use_current_ip ? 1 : 0
+  count = var.firewall_use_current_ipv4 ? 1 : 0
   url   = "https://ipv4.icanhazip.com"
 }
 
 data "http" "personal_ipv6" {
-  count = var.firewall_use_current_ip ? 1 : 0
+  count = var.firewall_use_current_ipv6 ? 1 : 0
   url   = "https://ipv6.icanhazip.com"
 }
 
 locals {
-  current_ips = var.firewall_use_current_ip ? [
-    "${chomp(data.http.personal_ipv4[0].response_body)}/32",
-    "${chomp(data.http.personal_ipv6[0].response_body)}/128",
-  ] : []
+  use_current_ip = var.firewall_use_current_ipv4 || var.firewall_use_current_ipv6
 
-  base_firewall_rules = concat(
-    var.firewall_kube_api_source == null && !var.firewall_use_current_ip ? [] : [
-      {
-        description = "Allow Incoming Requests to Kube API Server"
-        direction   = "in"
-        protocol    = "tcp"
-        port        = "6443"
-        source_ips  = var.firewall_kube_api_source != null ? var.firewall_kube_api_source : local.current_ips
-      }
-    ],
-    var.firewall_talos_api_source == null && !var.firewall_use_current_ip ? [] : [
-      {
-        description = "Allow Incoming Requests to Talos API Server"
-        direction   = "in"
-        protocol    = "tcp"
-        port        = "50000"
-        source_ips  = var.firewall_talos_api_source != null ? var.firewall_talos_api_source : local.current_ips
-      }
-    ],
+  current_ips = concat(
+    var.firewall_use_current_ipv4 ? ["${chomp(data.http.personal_ipv4[0].response_body)}/32"] : [],
+    var.firewall_use_current_ipv6 ? ["${chomp(data.http.personal_ipv6[0].response_body)}/128"] : [],
   )
 
-  # create a new firewall list based on base_firewall_rules but with direction-protocol-port as key
-  # this is needed to avoid duplicate rules
-  firewall_rules = {
-    for rule in local.base_firewall_rules :
+  api_services = {
+    "kube" = {
+      port        = "6443"
+      source      = var.firewall_kube_api_source
+      description = "Allow Incoming Requests to Kube API Server"
+    },
+    "talos" = {
+      port        = "50000"
+      source      = var.firewall_talos_api_source
+      description = "Allow Incoming Requests to Talos API Server"
+    }
+  }
+
+  base_firewall_rules = [
+    for key, service in local.api_services : {
+      description = service.description
+      direction   = "in"
+      protocol    = "tcp"
+      port        = service.port
+      source_ips  = service.source != null ? service.source : local.current_ips
+    } if service.source != null || local.use_current_ip
+  ]
+
+  # Merge base and extra rules, ensuring extra rules take precedence for duplicates.
+  firewall_rules_list = values({
+    for rule in concat(local.base_firewall_rules, var.extra_firewall_rules) :
     format("%s-%s-%s",
       lookup(rule, "direction", "null"),
       lookup(rule, "protocol", "null"),
       lookup(rule, "port", "null")
     ) => rule
-  }
-
-  # do the same for var.extra_firewall_rules
-  extra_firewall_rules = {
-    for rule in var.extra_firewall_rules :
-    format("%s-%s-%s",
-      lookup(rule, "direction", "null"),
-      lookup(rule, "protocol", "null"),
-      lookup(rule, "port", "null")
-    ) => rule
-  }
-
-  # merge the two lists
-  firewall_rules_merged = merge(local.firewall_rules, local.extra_firewall_rules)
-
-  # convert the merged list back to a list
-  firewall_rules_list = values(local.firewall_rules_merged)
+  })
 }
 
 resource "hcloud_firewall" "this" {
