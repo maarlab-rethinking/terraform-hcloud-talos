@@ -10,6 +10,12 @@ variable "cluster_name" {
   description = "The name of the cluster."
 }
 
+variable "ignore_health_check" {
+  description = "Set to `true` to disable the cluster health check. The check is active by default and disabling it can prevent errors during a `terraform destroy`."
+  type        = bool
+  default     = false
+}
+
 variable "cluster_domain" {
   type        = string
   default     = "cluster.local"
