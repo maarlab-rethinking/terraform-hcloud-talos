@@ -35,7 +35,7 @@ data "helm_template" "cilium_default" {
     },
     {
       name  = "loadBalancer.acceleration"
-      value = "native"
+      value = "best-effort" # https://github.com/hcloud-talos/terraform-hcloud-talos/issues/119
     },
     {
       name  = "encryption.enabled"
