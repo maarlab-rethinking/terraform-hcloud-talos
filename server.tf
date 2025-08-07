@@ -99,6 +99,10 @@ resource "hcloud_server" "control_planes" {
     data.talos_machine_configuration.control_plane
   ]
 
+  timeouts {
+    create = var.server_create_timeout
+  }
+
   lifecycle {
     ignore_changes = [
       user_data,
@@ -143,6 +147,10 @@ resource "hcloud_server" "workers" {
     hcloud_network_subnet.nodes,
     data.talos_machine_configuration.worker
   ]
+
+  timeouts {
+    create = var.server_create_timeout
+  }
 
   lifecycle {
     ignore_changes = [

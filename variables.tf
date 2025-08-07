@@ -265,6 +265,12 @@ variable "disable_arm" {
   description = "If true, arm images will not be used."
 }
 
+variable "server_create_timeout" {
+  type        = string
+  default     = "30m"
+  description = "Timeout for server creation."
+}
+
 # Talos
 variable "kubelet_extra_args" {
   type        = map(string)
