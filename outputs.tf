@@ -45,4 +45,3 @@ output "talos_worker_ids" {
     for id, server in hcloud_server.workers : id => server.id
   }
 }
-
