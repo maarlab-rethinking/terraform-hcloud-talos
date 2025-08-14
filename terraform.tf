@@ -27,6 +27,11 @@ terraform {
       version = ">= 2.1.3"
     }
 
+    kubernetes = {
+      source  = "hashicorp/kubernetes"
+      version = ">= 2.38.0"
+    }
+
     tls = {
       source  = "hashicorp/tls"
       version = ">= 4.1.0"
@@ -54,4 +59,11 @@ provider "kubectl" {
   cluster_ca_certificate = local.kubeconfig_data.cluster_ca_certificate
   load_config_file       = false
   apply_retry_count      = 3
+}
+
+provider "kubernetes" {
+  host                   = local.kubeconfig_data.host
+  client_certificate     = local.kubeconfig_data.client_certificate
+  client_key             = local.kubeconfig_data.client_key
+  cluster_ca_certificate = local.kubeconfig_data.cluster_ca_certificate
 }

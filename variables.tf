@@ -399,6 +399,46 @@ variable "deploy_prometheus_operator_crds" {
   description = "If true, the Prometheus Operator CRDs will be deployed."
 }
 
+variable "flux_operator_version" {
+  type        = string
+  default     = "0.27.0"
+  description = "The version of the Flux Operator to deploy."
+}
+
+variable "flux_operator_values" {
+  type        = list(string)
+  default     = null
+  description = <<EOF
+    The values.yaml file to use for the Flux Operator Helm chart.
+    If null (default), the default values will be used.
+    Otherwise, the provided values will be used.
+    Example:
+    ```
+    flux_operator_values  = [templatefile("flux/operator-values.yaml", {})]
+    ```
+  EOF
+}
+
+variable "flux_instance_version" {
+  type        = string
+  default     = "0.27.0"
+  description = "The version of the Flux Instance to deploy."
+}
+
+variable "flux_instance_values" {
+  type        = list(string)
+  default     = null
+  description = <<EOF
+    The values.yaml file to use for the Flux Instance Helm chart.
+    If null (default), the default values will be used.
+    Otherwise, the provided values will be used.
+    Example:
+    ```
+    flux_instance_values  = [templatefile("flux/instance-values.yaml", {})]
+    ```
+  EOF
+}
+
 variable "hcloud_ccm_version" {
   type        = string
   default     = null
@@ -415,4 +455,23 @@ variable "extraManifests" {
   type        = list(string)
   default     = null
   description = "Additional manifests URL applied during Talos bootstrap."
+}
+
+variable "flux_secret_name" {
+  type        = string
+  description = "Name for the flux pull secret in the flux-system namespace."
+  default     = "flux-system"
+}
+
+variable "flux_secret_username" {
+  type        = string
+  description = "Username for the flux pull secret in the flux-system namespace."
+  sensitive   = true
+  default     = "git"
+}
+
+variable "flux_secret_password" {
+  type        = string
+  description = "Password for the flux pull secret in the flux-system namespace."
+  sensitive   = true
 }
