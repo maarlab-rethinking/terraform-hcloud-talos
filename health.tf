@@ -13,7 +13,7 @@ data "http" "talos_health" {
   url      = "https://${local.control_plane_public_ipv4_list[0]}:${local.api_port_k8s}/version"
   insecure = true
   retry {
-    attempts     = 60
+    attempts     = 20
     min_delay_ms = 5000
     max_delay_ms = 5000
   }
