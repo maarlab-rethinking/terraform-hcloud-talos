@@ -92,8 +92,7 @@ variable "firewall_kube_api_source" {
   default     = null
   description = <<EOF
     Source networks that have Kube API access to the servers.
-    If null (default), the all traffic is blocked.
-    If set, this overrides the firewall_use_current_ip setting.
+    If null (default), the all traffic is blocked unless firewall_use_current_ipv4 or firewall_use_current_ipv6 is set.
   EOF
 }
 
@@ -102,8 +101,7 @@ variable "firewall_talos_api_source" {
   default     = null
   description = <<EOF
     Source networks that have Talos API access to the servers.
-    If null (default), the all traffic is blocked.
-    If set, this overrides the firewall_use_current_ip setting.
+    If null (default), the all traffic is blocked unless firewall_use_current_ipv4 or firewall_use_current_ipv6 is set.
   EOF
 }
 

@@ -10,23 +10,26 @@ data "http" "personal_ipv6" {
 }
 
 locals {
+  # Check if any current IP detection is enabled
   use_current_ip = var.firewall_use_current_ipv4 || var.firewall_use_current_ipv6
 
-  current_ips = concat(
+  # Build list of current IPs with proper CIDR notation
+  current_ips = compact(concat(
     var.firewall_use_current_ipv4 ? ["${chomp(data.http.personal_ipv4[0].response_body)}/32"] : [],
-    var.firewall_use_current_ipv6 ? ["${chomp(data.http.personal_ipv6[0].response_body)}/128"] : [],
-  )
+    var.firewall_use_current_ipv6 ? ["${chomp(data.http.personal_ipv6[0].response_body)}/128"] : []
+  ))
 
+  # Define API services configuration
   api_services = {
-    "kube" = {
-      port        = "6443"
+    kube = {
+      port        = local.api_port_k8s
       source      = var.firewall_kube_api_source
-      description = "Allow Incoming Requests to Kube API Server"
-    },
-    "talos" = {
+      description = "Allow incoming requests to Kubernetes API Server"
+    }
+    talos = {
       port        = "50000"
       source      = var.firewall_talos_api_source
-      description = "Allow Incoming Requests to Talos API Server"
+      description = "Allow incoming requests to Talos API Server"
     }
   }
 
@@ -36,7 +39,7 @@ locals {
       direction   = "in"
       protocol    = "tcp"
       port        = service.port
-      source_ips  = service.source != null ? service.source : local.current_ips
+      source_ips  = service.source != null ? concat(service.source, local.current_ips) : local.current_ips
     } if service.source != null || local.use_current_ip
   ]
 
