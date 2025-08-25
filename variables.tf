@@ -439,6 +439,28 @@ variable "flux_instance_values" {
   EOF
 }
 
+variable "flux_bootstrap_url" {
+  type        = string
+  description = "The URL of the bootstrap repository."
+}
+
+variable "flux_cluster_path" {
+  type        = string
+  description = "The path to the cluster in the bootstrap repository."
+}
+
+
+variable "flux_branch" {
+  type        = string
+  description = "The branch of the bootstrap repository."
+}
+
+
+variable "flux_pull_secret" {
+  type        = string
+  description = "The name of the pull secret in the flux-system namespace."
+}
+
 variable "hcloud_ccm_version" {
   type        = string
   default     = null

@@ -1,0 +1,16 @@
+instance:
+  components:
+    - source-controller
+    - kustomize-controller
+    - helm-controller
+    - notification-controller
+    - image-reflector-controller
+    - image-automation-controller
+  sync:
+    kind: GitRepository
+    url: "${bootstrap_url}"
+    ref: "refs/heads/${branch}"
+    path: "${cluster_path}"
+    pullSecret: "${pull_secret}"
+extraArgs:
+  - "--kube-server=${addr}:${port}"

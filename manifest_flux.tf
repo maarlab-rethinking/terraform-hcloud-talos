@@ -36,12 +36,14 @@ data "helm_template" "flux_instance" {
   version      = var.flux_instance_version
   kube_version = var.kubernetes_version
 
-  set = [{
-    name  = "extraArgs[0]"
-    value = "--kube-server=${local.control_plane_private_vip_ipv4}:${local.api_port_k8s}"
-  }]
-
-  values = var.flux_instance_values
+  values = var.flux_instance_values == null ? [templatefile("${path.module}/flux/instance-values.yaml", {
+    bootstrap_url = var.flux_bootstrap_url
+    cluster_path  = var.flux_cluster_path
+    branch        = var.flux_branch
+    pull_secret   = var.flux_pull_secret
+    addr          = local.control_plane_private_vip_ipv4
+    port          = local.api_port_k8s
+  })] : var.flux_instance_values
 }
 
 data "kubectl_file_documents" "flux_instance" {
