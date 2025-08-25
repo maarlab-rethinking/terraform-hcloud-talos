@@ -91,6 +91,17 @@ This repository contains a Terraform module for creating a Kubernetes cluster wi
 - [Validates and approves node CSRs](https://github.com/siderolabs/talos-cloud-controller-manager?tab=readme-ov-file#node-certificate-approval).
 - In DaemonSet mode: CCM will use hostNetwork and current node to access kubernetes/talos API
 
+### [Flux](https://fluxcd.io/)
+
+- **Flux Operator:** Deploys the Flux Operator which provides the core Flux functionality for GitOps workflows.
+- **Flux Instance:** Deploys a Flux Instance that manages Git repositories and applies manifests from them.
+- **System Secret:** Creates a Kubernetes secret in the `flux-system` namespace for authentication purposes.
+- **GitOps Ready:** Enables GitOps workflows by automatically syncing your cluster state with Git repositories.
+- **Customizable:** Both Flux Operator and Flux Instance can be customized using Helm values files.
+
+> [!IMPORTANT]
+> The Flux versions (`flux_operator_version` and `flux_instance_version`) should be compatible with each other and your Kubernetes version. Refer to the [Flux compatibility matrix](https://fluxcd.io/flux/installation/compatibility/) for version compatibility information.
+
 ## Prerequisites
 
 ### Required Software
@@ -98,6 +109,17 @@ This repository contains a Terraform module for creating a Kubernetes cluster wi
 - [terraform](https://www.terraform.io/downloads.html)
 - [packer](https://www.packer.io/downloads)
 - [helm](https://helm.sh/docs/intro/install/)
+
+### Terraform Providers
+
+This module uses the following Terraform providers:
+- **Hetzner Cloud Provider:** For managing Hetzner Cloud resources (servers, networks, firewalls, etc.)
+- **TLS Provider:** For generating TLS certificates and keys
+- **Kubernetes Provider:** For deploying Flux components and other Kubernetes resources
+- **Helm Provider:** For deploying Helm charts (Flux Operator and Flux Instance)
+
+> [!NOTE]
+> The Kubernetes and Helm providers are automatically configured when Flux is enabled. These providers are used to deploy Flux components and manage GitOps workflows within the cluster.
 
 ### Recommended Software
 
@@ -293,6 +315,37 @@ In this example, the Kubernetes API firewall rule would allow access from:
 - Your current IPv4 address (automatically detected)
 - The CIDR range 203.0.113.0/24
 - The specific IP 198.51.100.50
+
+### Flux Configuration
+
+To enable Flux GitOps functionality, you can configure the following variables:
+
+```hcl
+# Basic Flux configuration
+flux_operator_version = "0.27.0"
+flux_instance_version = "0.27.0"
+
+# Custom Flux Operator values
+flux_operator_values = [
+  templatefile("flux/operator-values.yaml", {
+    # Add your custom values here
+  })
+]
+
+# Custom Flux Instance values
+flux_instance_values = [
+  templatefile("flux/instance-values.yaml", {
+    # Add your custom values here
+  })
+]
+
+# Flux system secret credentials
+flux_secret_name     = "flux-system"
+flux_secret_username = "git"
+flux_secret_password = "your-secure-password"
+```
+
+**Note:** If you provide `flux_instance_values`, a default Flux Instance will be deployed. If you provide custom values, you'll need to provide the raw Flux Instance manually according to your GitOps requirements.
 
 ## Upgrading Kubernetes
 
