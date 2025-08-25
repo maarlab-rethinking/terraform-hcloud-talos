@@ -36,6 +36,11 @@ data "helm_template" "flux_instance" {
   version      = var.flux_instance_version
   kube_version = var.kubernetes_version
 
+  set = [{
+    name  = "extraArgs[0]"
+    value = "--kube-server=${local.control_plane_private_vip_ipv4}:${local.api_port_k8s}"
+  }]
+
   values = var.flux_instance_values
 }
 
