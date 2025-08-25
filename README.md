@@ -25,7 +25,7 @@ This repository contains a Terraform module for creating a Kubernetes cluster wi
 |--------------------------------------------------------------------|--------|-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
 | Production ready                                                   | ✅      | All recommendations from the [Talos Production Clusters](https://www.talos.dev/v1.6/introduction/prodnotes/) are implemented. **But you need to read it carefully to understand all implications.**   |
 | Use private networks for the internal communication of the cluster | ✅      | Hetzner Cloud Networks are used for internal node-to-node communication.                                                                                                                              |
-| Secure API Exposure                                                | ✅      | The Kubernetes and Talos APIs are exposed to the public internet but secured via firewall rules. By default (`firewall_use_current_ip = true`), only traffic from your current IP address is allowed. |
+| Secure API Exposure                                                | ✅      | The Kubernetes and Talos APIs are exposed to the public internet but secured via firewall rules. By default (`firewall_use_current_ipv4 = false`, `firewall_use_current_ipv6 = false`), no traffic from your current IP address is allowed. Firewall sources are additive - manual IPs are combined with automatically detected current IPs. |
 | Possibility to change all CIDRs of the networks                    | ✅      | All network CIDRs (network, node, pod, service) can be customized.                                                                                                                                    |
 | Configure the Cluster optimally to run in the Hetzner Cloud        | ✅      | This includes manual configuration of the network devices and not via DHCP, provisioning of Floating IPs (VIP), etc.                                                                                  |
 
@@ -73,7 +73,7 @@ This repository contains a Terraform module for creating a Kubernetes cluster wi
   default Flannel.
 - It provides a lot of features like Network Policies, Load Balancing, and more.
 
-> [!IMPORTANT]  
+> [!IMPORTANT]
 > The Cilium version (`cilium_version`) has to be compatible with the Kubernetes (`kubernetes_version`) version.
 
 ### [Hcloud Cloud Controller Manager](https://github.com/hetznercloud/hcloud-cloud-controller-manager)
@@ -152,10 +152,12 @@ module "talos" {
   talos_version = "v1.10.3" # The version of talos features to use in generated machine configurations
 
   hcloud_token            = "your-hcloud-token"
-  # If true, the current IP address will be used as the source for the firewall rules.
+  # If true, the current IPv4 address will be added as a source for the firewall rules.
   # ATTENTION: to determine the current IP, a request to a public service (https://ipv4.icanhazip.com) is made.
-  # If false, you have to provide your public IP address (as list) in the variable `firewall_kube_api_source` and `firewall_talos_api_source`.
-  firewall_use_current_ip = true
+  # You can also enable IPv6 detection with firewall_use_current_ipv6 = true
+  # Firewall sources are additive - manual IPs specified in firewall_kube_api_source and firewall_talos_api_source
+  # will be combined with automatically detected current IPs.
+  firewall_use_current_ipv4 = true
 
   cluster_name    = "dummy.com"
   datacenter_name = "fsn1-dc14"
@@ -185,7 +187,8 @@ module "talos" {
   cluster_domain   = "cluster.dummy.com.local"
   cluster_api_host = "kube.dummy.com"
 
-  firewall_use_current_ip = false
+  firewall_use_current_ipv4 = false
+  firewall_use_current_ipv6 = false
   firewall_kube_api_source = ["your-ip"]
   firewall_talos_api_source = ["your-ip"]
 
@@ -266,6 +269,31 @@ kernel_modules_to_load = [
 ]
 ```
 
+### Firewall Configuration
+
+The firewall system now supports additive source IP configuration:
+
+- **Automatic IP Detection**: Use `firewall_use_current_ipv4 = true` and/or `firewall_use_current_ipv6 = true` to automatically detect and add your current public IP addresses to the firewall rules.
+- **Manual IP Specification**: Use `firewall_kube_api_source` and `firewall_talos_api_source` to specify additional IP addresses or CIDR ranges that should have access.
+- **Additive Behavior**: When both automatic detection and manual specification are used, the firewall rules combine all sources. This means you can have both your current IP (automatically detected) and additional IPs (manually specified) in the same firewall rule.
+
+Example configuration:
+```hcl
+# Enable automatic IPv4 detection
+firewall_use_current_ipv4 = true
+
+# Add additional IPs for Kubernetes API access
+firewall_kube_api_source = ["203.0.113.0/24", "198.51.100.50/32"]
+
+# Add additional IPs for Talos API access
+firewall_talos_api_source = ["203.0.113.0/24"]
+```
+
+In this example, the Kubernetes API firewall rule would allow access from:
+- Your current IPv4 address (automatically detected)
+- The CIDR range 203.0.113.0/24
+- The specific IP 198.51.100.50
+
 ## Upgrading Kubernetes
 
 The `kubernetes_version` variable in this Terraform module is used for the _initial deployment_ of your Kubernetes cluster.
@@ -283,7 +311,7 @@ To upgrade your Kubernetes cluster, you must use the `talosctl upgrade-k8s` comm
   This should be the `cluster_api_host` you configured,
   or the public IP address of your Floating IP/first control plane node.
 - **Firewall Access:**
-  Ensure your firewall rules (configured via `firewall_use_current_ip` or `firewall_talos_api_source`)
+  Ensure your firewall rules (configured via `firewall_use_current_ipv4`, `firewall_use_current_ipv6` or `firewall_talos_api_source`)
   allow access to the Talos API port (default 50000) on your control plane nodes from where you are running `talosctl`.
   Connectivity issues (e.g., `i/o timeout`) can occur if this port is blocked.
 
