@@ -1,15 +1,22 @@
 locals {
   # Define a dummy worker entry for when count is 0
-  dummy_workers = var.worker_count == 0 ? [{
-    index              = 0
-    name               = "dummy-worker-0"
-    ipv4_public        = "0.0.0.0"                           # Fallback
-    ipv6_public        = null                                # Fallback
-    ipv6_public_subnet = null                                # Fallback
-    ipv4_private       = cidrhost(local.node_ipv4_cidr, 200) # Use a predictable dummy private IP
+  dummy_workers = local.total_worker_count == 0 ? [{
+    index               = 0
+    name                = "dummy-worker-0"
+    server_type         = "cx11"
+    image_id            = null
+    ipv4_public         = "0.0.0.0"                           # Fallback
+    ipv6_public         = null                                # Fallback
+    ipv6_public_subnet  = null                                # Fallback
+    ipv4_private        = cidrhost(local.node_ipv4_cidr, 200) # Use a predictable dummy private IP
+    labels              = {}
+    taints              = []
+    node_group_index    = 0
+    node_in_group_index = 0
   }] : []
 
-  # Combine real and dummy workers
+  # Combine real and dummy workers - always include dummy when no workers exist
+  #  merged_workers = local.total_worker_count == 0 ? local.dummy_workers : local.workers
   merged_workers = concat(local.workers, local.dummy_workers)
 
   # Generate YAML for all (real or dummy) workers
@@ -23,20 +30,34 @@ locals {
           ]
         }
         certSANs = local.cert_SANs
-        kubelet = {
-          extraArgs = merge(
-            {
-              "cloud-provider"             = "external"
-              "rotate-server-certificates" = true
-            },
-            var.kubelet_extra_args
-          )
-          nodeIP = {
-            validSubnets = [
-              local.node_ipv4_cidr
-            ]
-          }
-        }
+        kubelet = merge(
+          {
+            extraArgs = merge(
+              {
+                "cloud-provider"             = "external"
+                "rotate-server-certificates" = true
+              },
+              var.kubelet_extra_args
+            )
+            nodeIP = {
+              validSubnets = [
+                local.node_ipv4_cidr
+              ]
+            }
+          },
+          # Add registerWithTaints if taints are defined
+          length(worker.taints) > 0 ? {
+            extraConfig = {
+              registerWithTaints = [
+                for taint in worker.taints : {
+                  key    = taint.key
+                  value  = taint.value
+                  effect = taint.effect
+                }
+              ]
+            }
+          } : {}
+        )
         network = {
           extraHostEntries = local.extra_host_entries
           kubespan = {
@@ -70,6 +91,7 @@ locals {
             "time.cloudflare.com"
           ]
         }
+        nodeLabels = worker.labels
         registries = var.registries
       }
       cluster = {

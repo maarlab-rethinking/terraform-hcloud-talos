@@ -171,7 +171,7 @@ module "talos" {
   # https://registry.terraform.io/modules/hcloud-talos/talos/hcloud
   version = "<latest-version>" # Replace with the latest version number
 
-  talos_version = "v1.10.3" # The version of talos features to use in generated machine configurations
+  talos_version = "v1.11.0" # The version of talos features to use in generated machine configurations
 
   hcloud_token            = "your-hcloud-token"
   # If true, the current IPv4 address will be added as a source for the firewall rules.
@@ -199,7 +199,7 @@ module "talos" {
   version = "<latest-version>" # Replace with the latest version number
 
   # Use versions compatible with each other and supported by the module/Talos
-  talos_version      = "v1.10.3"
+  talos_version      = "v1.11.0"
   kubernetes_version = "1.30.3"
   cilium_version     = "1.16.2"
 
@@ -228,6 +228,64 @@ module "talos" {
   service_ipv4_cidr = "10.0.8.0/21"
 }
 ```
+
+### Mixed Worker Node Types
+
+For more advanced use cases, you can define different types of worker nodes with individual configurations using the `worker_nodes` variable:
+
+```hcl
+module "talos" {
+  source  = "hcloud-talos/talos/hcloud"
+  version = "<latest-version>"
+
+  talos_version      = "v1.10.3"
+  kubernetes_version = "1.30.3"
+
+  hcloud_token            = "your-hcloud-token"
+  firewall_use_current_ip = true
+
+  cluster_name    = "mixed-cluster"
+  datacenter_name = "fsn1-dc14"
+
+  control_plane_count       = 1
+  control_plane_server_type = "cx22"
+
+  # Define different worker node types
+  worker_nodes = [
+    # Standard x86 workers
+    {
+      type  = "cx22"
+      labels = {
+        "node.kubernetes.io/instance-type" = "cx22"
+      }
+    },
+    # ARM workers for specific workloads with taints
+    {
+      type   = "cax22"
+      labels = {
+        "node.kubernetes.io/arch"          = "arm64"
+        "affinity.example.com" = "example"
+      }
+      taints = [
+        {
+          key    = "arm64-only"
+          value  = "true"
+          effect = "NoSchedule"
+        }
+      ]
+    }
+  ]
+}
+```
+
+> [!NOTE]
+> The `worker_nodes` variable allows you to:
+> - Mix different server types (x86 and ARM)
+> - Add custom labels to nodes
+> - Apply taints for workload isolation
+> - Control the count of each node type independently
+>
+> The legacy `worker_count` and `worker_server_type` variables are still supported for backward compatibility but are deprecated in favor of `worker_nodes`.
 
 You need to pipe the outputs of the module:
 
