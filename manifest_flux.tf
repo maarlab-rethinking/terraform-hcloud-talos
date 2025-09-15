@@ -11,7 +11,7 @@ resource "helm_release" "flux_operator" {
 }
 
 resource "helm_release" "flux_instance" {
-  count      = var.flux_instance_values == null ? 0 : 1
+  count      = var.flux_instance_values != null || var.flux_bootstrap_url != null ? 1 : 0
   depends_on = [helm_release.flux_operator]
 
   name       = "flux-instance"
@@ -19,7 +19,55 @@ resource "helm_release" "flux_instance" {
   repository = "oci://ghcr.io/controlplaneio-fluxcd/charts"
   chart      = "flux-instance"
   version    = var.flux_instance_version
-  values     = var.flux_instance_values
+
+  values = var.flux_instance_values
+  set = var.flux_instance_values == null && var.flux_bootstrap_url != null ? concat([
+    {
+      name  = "instance.components[0]"
+      value = "source-controller"
+    },
+    {
+      name  = "instance.components[1]"
+      value = "kustomize-controller"
+    },
+    {
+      name  = "instance.components[2]"
+      value = "helm-controller"
+    },
+    {
+      name  = "instance.components[3]"
+      value = "notification-controller"
+    },
+    {
+      name  = "instance.components[4]"
+      value = "image-reflector-controller"
+    },
+    {
+      name  = "instance.components[5]"
+      value = "image-automation-controller"
+    },
+    {
+      name  = "instance.sync.kind"
+      value = "GitRepository"
+    },
+    {
+      name  = "instance.sync.url"
+      value = var.flux_bootstrap_url
+    },
+    {
+      name  = "instance.sync.ref"
+      value = "refs/heads/${var.flux_branch}"
+    },
+    {
+      name  = "instance.sync.path"
+      value = var.flux_cluster_path
+    }
+    ], var.flux_secret_username != null && var.flux_secret_password != null ? [
+    {
+      name  = "instance.sync.pullSecret"
+      value = kubernetes_secret.flux_secret[0].metadata[0].name
+    }
+  ] : []) : null
 }
 
 resource "kubernetes_secret" "flux_secret" {
@@ -27,7 +75,7 @@ resource "kubernetes_secret" "flux_secret" {
   depends_on = [helm_release.flux_operator]
 
   metadata {
-    name      = var.flux_secret_name
+    name      = "pull-secret"
     namespace = "flux-system"
   }
 

@@ -6,8 +6,7 @@ resource "helm_release" "cilium" {
   chart      = "cilium"
   version    = var.cilium_version
 
-  values = var.cilium_values != null ? var.cilium_values : null
-
+  values = var.cilium_values
   set = var.cilium_values == null ? [
     {
       name  = "operator.replicas"

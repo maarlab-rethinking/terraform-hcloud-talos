@@ -494,6 +494,37 @@ variable "flux_instance_values" {
   EOF
 }
 
+variable "flux_bootstrap_url" {
+  type        = string
+  description = "Bootstrap URL to use for the Flux instance."
+  default     = null
+}
+
+variable "flux_cluster_path" {
+  type        = string
+  description = "Cluster path to use for the Flux instance."
+  default     = null
+}
+
+variable "flux_branch" {
+  type        = string
+  description = "Branch to use for the Flux instance."
+  default     = "main"
+}
+
+variable "flux_secret_username" {
+  type        = string
+  description = "Username for the flux pull secret in the flux-system namespace."
+  sensitive   = true
+  default     = "git"
+}
+
+variable "flux_secret_password" {
+  type        = string
+  description = "Password for the flux pull secret in the flux-system namespace."
+  sensitive   = true
+}
+
 variable "hcloud_ccm_version" {
   type        = string
   default     = null
@@ -510,23 +541,4 @@ variable "extraManifests" {
   type        = list(string)
   default     = null
   description = "Additional manifests URL applied during Talos bootstrap."
-}
-
-variable "flux_secret_name" {
-  type        = string
-  description = "Name for the flux pull secret in the flux-system namespace."
-  default     = "flux-system"
-}
-
-variable "flux_secret_username" {
-  type        = string
-  description = "Username for the flux pull secret in the flux-system namespace."
-  sensitive   = true
-  default     = "git"
-}
-
-variable "flux_secret_password" {
-  type        = string
-  description = "Password for the flux pull secret in the flux-system namespace."
-  sensitive   = true
 }
