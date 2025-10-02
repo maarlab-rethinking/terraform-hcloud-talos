@@ -61,6 +61,10 @@ resource "helm_release" "flux_instance" {
     {
       name  = "instance.sync.path"
       value = var.flux_cluster_path
+    },
+    {
+      name  = "instance.distribution.artifact"
+      value = "oci://ghcr.io/controlplaneio-fluxcd/flux-operator-manifests:v${var.flux_operator_version}"
     }
     ], var.flux_secret_username != null && var.flux_secret_password != null ? [
     {
