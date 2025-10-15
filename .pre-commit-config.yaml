@@ -3,6 +3,7 @@ repos:
     rev: v5.0.0
     hooks:
       - id: trailing-whitespace
+        exclude: ^.github/commitlint/.yarn/releases/
       - id: end-of-file-fixer
       - id: check-merge-conflict
       - id: check-case-conflict
