@@ -444,6 +444,12 @@ variable "cilium_values" {
   EOF
 }
 
+variable "cilium_enable_egress_gateway" {
+  type        = bool
+  default     = false
+  description = "Enable the egress gateway for Cilium."
+}
+
 variable "cilium_enable_encryption" {
   type        = bool
   default     = false

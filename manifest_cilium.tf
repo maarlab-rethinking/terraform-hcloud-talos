@@ -30,7 +30,7 @@ resource "helm_release" "cilium" {
     },
     {
       name  = "bpf.masquerade"
-      value = "false"
+      value = var.cilium_enable_egress_gateway
     },
     {
       name  = "loadBalancer.acceleration"
@@ -83,6 +83,10 @@ resource "helm_release" "cilium" {
     {
       name  = "operator.prometheus.serviceMonitor.enabled"
       value = var.cilium_enable_service_monitors
+    },
+    {
+      name  = "egressGateway.enabled"
+      value = var.cilium_enable_egress_gateway
     }
   ] : null
 
