@@ -85,6 +85,10 @@ resource "helm_release" "cilium" {
       value = var.cilium_enable_service_monitors
     },
     {
+      name  = "bpf.hostLegacyRouting"
+      value = var.cilium_enable_egress_gateway # https://github.com/cilium/cilium/blob/e2aa6ca523e4f980869a6bfe2ba05d50c9942d98/Documentation/installation/k8s-install-talos-linux.rst
+    },
+    {
       name  = "egressGateway.enabled"
       value = var.cilium_enable_egress_gateway
     }
