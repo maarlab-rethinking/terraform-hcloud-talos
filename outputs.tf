@@ -46,3 +46,8 @@ output "talos_worker_ids" {
     { for id, server in hcloud_server.workers : id => server.id }
   )
 }
+
+output "public_ipv4" {
+  description = "The best public IPv4 address for the cluster, prefers floating IP if available."
+  value       = local.best_public_ipv4
+}
