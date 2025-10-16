@@ -208,14 +208,17 @@ variable "control_plane_server_type" {
   type        = string
   description = <<EOF
     The server type to use for the control plane nodes.
-    Possible values: cx11, cx21, cx22, cx31, cx32, cx41, cx42, cx51, cx52, cpx11, cpx21, cpx31,
-    cpx41, cpx51, cax11, cax21, cax31, cax41, ccx13, ccx23, ccx33, ccx43, ccx53, ccx63
+    Possible values:
+      "cx23", "cx33", "cx43", "cx53",                      # Cost-Optimized x86 (Intel/AMD)
+      "cax11", "cax21", "cax31", "cax41",                  # Cost-Optimized xArm (Ampere)
+      "cpx22", "cpx32", "cpx42", "cpx52", "cpx62",         # Regular Performance x86 (AMD)
+      "ccx13", "ccx23", "ccx33", "ccx43", "ccx53", "ccx63" # General Purpose x86 (AMD)
   EOF
   validation {
     condition = contains([
-      "cx11", "cx21", "cx22", "cx31", "cx32", "cx41", "cx42", "cx51", "cx52",
-      "cpx11", "cpx21", "cpx31", "cpx41", "cpx51",
+      "cx23", "cx33", "cx43", "cx53",
       "cax11", "cax21", "cax31", "cax41",
+      "cpx22", "cpx32", "cpx42", "cpx52", "cpx62",
       "ccx13", "ccx23", "ccx33", "ccx43", "ccx53", "ccx63"
     ], var.control_plane_server_type)
     error_message = "Invalid control plane server type."
@@ -249,14 +252,17 @@ variable "worker_server_type" {
   default     = "cx11"
   description = <<EOF
     DEPRECATED: Use worker_nodes instead. The server type to use for the worker nodes.
-    Possible values: cx11, cx21, cx22, cx31, cx32, cx41, cx42, cx51, cx52, cpx11, cpx21, cpx31,
-    cpx41, cpx51, cax11, cax21, cax31, cax41, ccx13, ccx23, ccx33, ccx43, ccx53, ccx63
+    Possible values:
+      "cx23", "cx33", "cx43", "cx53",                      # Cost-Optimized x86 (Intel/AMD)
+      "cax11", "cax21", "cax31", "cax41",                  # Cost-Optimized xArm (Ampere)
+      "cpx22", "cpx32", "cpx42", "cpx52", "cpx62",         # Regular Performance x86 (AMD)
+      "ccx13", "ccx23", "ccx33", "ccx43", "ccx53", "ccx63" # General Purpose x86 (AMD)
   EOF
   validation {
     condition = contains([
-      "cx11", "cx21", "cx22", "cx31", "cx32", "cx41", "cx42", "cx51", "cx52",
-      "cpx11", "cpx21", "cpx31", "cpx41", "cpx51",
+      "cx23", "cx33", "cx43", "cx53",
       "cax11", "cax21", "cax31", "cax41",
+      "cpx22", "cpx32", "cpx42", "cpx52", "cpx62",
       "ccx13", "ccx23", "ccx33", "ccx43", "ccx53", "ccx63"
     ], var.worker_server_type)
     error_message = "Invalid worker server type."
@@ -276,7 +282,11 @@ variable "worker_nodes" {
   default     = []
   description = <<EOF
     List of worker node configurations. Each object defines a group of worker nodes with the same configuration.
-    - type: Server type (cx11, cx21, cx22, cx31, cx32, cx41, cx42, cx51, cx52, cpx11, cpx21, cpx31, cpx41, cpx51, cax11, cax21, cax31, cax41, ccx13, ccx23, ccx33, ccx43, ccx53, ccx63)
+    - type: Server type
+      "cx23", "cx33", "cx43", "cx53",                      # Cost-Optimized x86 (Intel/AMD)
+      "cax11", "cax21", "cax31", "cax41",                  # Cost-Optimized xArm (Ampere)
+      "cpx22", "cpx32", "cpx42", "cpx52", "cpx62",         # Regular Performance x86 (AMD)
+      "ccx13", "ccx23", "ccx33", "ccx43", "ccx53", "ccx63" # General Purpose x86 (AMD)
     - count: Number of nodes of this type
     - labels: Map of Kubernetes labels to apply to these nodes (default: {})
     - taints: List of Kubernetes taints to apply to these nodes (default: [])
@@ -304,9 +314,9 @@ variable "worker_nodes" {
   validation {
     condition = alltrue([
       for node in var.worker_nodes : contains([
-        "cx11", "cx21", "cx22", "cx31", "cx32", "cx41", "cx42", "cx51", "cx52",
-        "cpx11", "cpx21", "cpx31", "cpx41", "cpx51",
+        "cx23", "cx33", "cx43", "cx53",
         "cax11", "cax21", "cax31", "cax41",
+        "cpx22", "cpx32", "cpx42", "cpx52", "cpx62",
         "ccx13", "ccx23", "ccx33", "ccx43", "ccx53", "ccx63"
       ], node.type)
     ])
