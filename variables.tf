@@ -63,21 +63,25 @@ variable "output_mode_config_cluster_endpoint" {
 }
 
 # Firewall
-variable "firewall_use_current_ipv4" {
-  type        = bool
-  default     = false
+variable "firewall_id" {
+  type        = string
+  default     = null
   description = <<EOF
-    If true, the current public IPv4 address will be added as a source for the firewall rules.
-    ATTENTION: to determine the current IP, a request to a public service (https://ipv4.icanhazip.com) is made.
+    ID of an existing Hetzner Cloud firewall to use instead of creating one.
+    When set, the module will not create a firewall and will use this ID instead.
+    This is useful to avoid chicken-and-egg issues when your IP changes:
+    manage the firewall externally and pass its ID here.
   EOF
 }
 
-variable "firewall_use_current_ipv6" {
+variable "firewall_use_current_ip" {
   type        = bool
   default     = false
   description = <<EOF
-    If true, the current public IPv6 address will be added as a source for the firewall rules.
-    ATTENTION: to determine the current IP, a request to a public service (https://ipv6.icanhazip.com) is made.
+    If true, the current IP address will be used as the source for the firewall rules.
+    ATTENTION: to determine the current IP, requests to public services are made:
+    - IPv4 address is always fetched from https://ipv4.icanhazip.com
+    - IPv6 address is only fetched from https://ipv6.icanhazip.com if enable_ipv6 = true
   EOF
 }
 
@@ -92,7 +96,8 @@ variable "firewall_kube_api_source" {
   default     = null
   description = <<EOF
     Source networks that have Kube API access to the servers.
-    If null (default), the all traffic is blocked unless firewall_use_current_ipv4 or firewall_use_current_ipv6 is set.
+    If null (default), the all traffic is blocked.
+    If set, this overrides the firewall_use_current_ip setting.
   EOF
 }
 
@@ -101,7 +106,8 @@ variable "firewall_talos_api_source" {
   default     = null
   description = <<EOF
     Source networks that have Talos API access to the servers.
-    If null (default), the all traffic is blocked unless firewall_use_current_ipv4 or firewall_use_current_ipv6 is set.
+    If null (default), the all traffic is blocked.
+    If set, this overrides the firewall_use_current_ip setting.
   EOF
 }
 
@@ -249,7 +255,7 @@ variable "worker_count" {
 
 variable "worker_server_type" {
   type        = string
-  default     = "cx11"
+  default     = "cpx11"
   description = <<EOF
     DEPRECATED: Use worker_nodes instead. The server type to use for the worker nodes.
     Possible values:
@@ -393,6 +399,23 @@ variable "talos_worker_extra_config_patches" {
   type        = list(string)
   default     = []
   description = "List of additional YAML configuration patches to apply to the Talos machine configuration for worker nodes."
+}
+
+
+variable "tailscale" {
+  type = object({
+    enabled  = optional(bool)
+    auth_key = optional(string)
+  })
+  default = {
+    enabled  = false
+    auth_key = ""
+  }
+  description = "The auth key to use for Tailscale."
+  validation {
+    condition     = var.tailscale.enabled == false || (var.tailscale.enabled == true && var.tailscale.auth_key != "")
+    error_message = "If tailscale is enabled, an auth_key must be provided."
+  }
 }
 
 variable "registries" {

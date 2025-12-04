@@ -116,11 +116,6 @@ The `.demo/` directory contains a test deployment configuration that:
 - Registry rate limiting from some Hetzner IPs
 - Health check disabled (issue #7967)
 
-### Multi-Architecture Support
-- Supports both ARM64 and x86_64 server types
-- Separate Packer builds create images for both architectures
-- Server type selection determines architecture (e.g., "cax11" for ARM64, "cx11" for x86_64)
-
 ### Multi-Architecture
 - ARM64: CAX server types
 - x86_64: CX/CPX server types

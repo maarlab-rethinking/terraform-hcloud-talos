@@ -111,7 +111,7 @@ resource "hcloud_server" "control_planes" {
   }
 
   firewall_ids = [
-    hcloud_firewall.this.id
+    local.firewall_id
   ]
 
   public_net {
@@ -161,7 +161,7 @@ resource "hcloud_server" "workers" {
   }, each.value.labels)
 
   firewall_ids = [
-    hcloud_firewall.this.id
+    local.firewall_id
   ]
 
   public_net {
@@ -209,7 +209,7 @@ resource "hcloud_server" "workers_new" {
   }, each.value.labels)
 
   firewall_ids = [
-    hcloud_firewall.this.id
+    local.firewall_id
   ]
 
   public_net {

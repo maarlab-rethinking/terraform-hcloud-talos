@@ -1,23 +1,37 @@
 # Retrieve the public IP address of the current machine if the firewall should be opened for the current IP
 data "http" "personal_ipv4" {
-  count = var.firewall_use_current_ipv4 ? 1 : 0
+  count = var.firewall_id == null && var.firewall_use_current_ip ? 1 : 0
   url   = "https://ipv4.icanhazip.com"
+
+  retry {
+    attempts     = 3
+    min_delay_ms = 1000
+    max_delay_ms = 2000
+  }
 }
 
 data "http" "personal_ipv6" {
-  count = var.firewall_use_current_ipv6 ? 1 : 0
+  count = var.firewall_id == null && var.firewall_use_current_ip && var.enable_ipv6 ? 1 : 0
   url   = "https://ipv6.icanhazip.com"
+
+  retry {
+    attempts     = 3
+    min_delay_ms = 1000
+    max_delay_ms = 2000
+  }
 }
 
 locals {
-  # Check if any current IP detection is enabled
-  use_current_ip = var.firewall_use_current_ipv4 || var.firewall_use_current_ipv6
-
-  # Build list of current IPs with proper CIDR notation
-  current_ips = compact(concat(
-    var.firewall_use_current_ipv4 ? ["${chomp(data.http.personal_ipv4[0].response_body)}/32"] : [],
-    var.firewall_use_current_ipv6 ? ["${chomp(data.http.personal_ipv6[0].response_body)}/128"] : []
-  ))
+  # Current IPs list - always includes IPv4, conditionally includes IPv6
+  # Only computed when firewall is managed by this module
+  current_ips = var.firewall_id == null && var.firewall_use_current_ip ? concat(
+    [
+      "${chomp(data.http.personal_ipv4[0].response_body)}/32",
+    ],
+    var.firewall_use_current_ip && var.enable_ipv6 ? [
+      "${chomp(data.http.personal_ipv6[0].response_body)}/128",
+    ] : []
+  ) : []
 
   # Define API services configuration
   api_services = {
@@ -40,7 +54,7 @@ locals {
       protocol    = "tcp"
       port        = service.port
       source_ips  = service.source != null ? concat(service.source, local.current_ips) : local.current_ips
-    } if service.source != null || local.use_current_ip
+    } if service.source != null || var.firewall_use_current_ip
   ]
 
   # Merge base and extra rules, ensuring extra rules take precedence for duplicates.
@@ -52,10 +66,14 @@ locals {
       lookup(rule, "port", "null")
     ) => rule
   })
+
+  # Resolved firewall ID to use
+  firewall_id = var.firewall_id != null ? var.firewall_id : try(hcloud_firewall.this[0].id, null)
 }
 
 resource "hcloud_firewall" "this" {
-  name = var.cluster_name
+  count = var.firewall_id == null ? 1 : 0
+  name  = var.cluster_name
   dynamic "rule" {
     for_each = local.firewall_rules_list
     //noinspection HILUnresolvedReference

@@ -25,7 +25,7 @@ This repository contains a Terraform module for creating a Kubernetes cluster wi
 |--------------------------------------------------------------------|--------|-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
 | Production ready                                                   | ✅      | All recommendations from the [Talos Production Clusters](https://www.talos.dev/v1.6/introduction/prodnotes/) are implemented. **But you need to read it carefully to understand all implications.**   |
 | Use private networks for the internal communication of the cluster | ✅      | Hetzner Cloud Networks are used for internal node-to-node communication.                                                                                                                              |
-| Secure API Exposure                                                | ✅      | The Kubernetes and Talos APIs are exposed to the public internet but secured via firewall rules. By default (`firewall_use_current_ipv4 = false`, `firewall_use_current_ipv6 = false`), no traffic from your current IP address is allowed. Firewall sources are additive - manual IPs are combined with automatically detected current IPs. |
+| Secure API Exposure                                                | ✅      | The Kubernetes and Talos APIs are exposed to the public internet but secured via firewall rules. By default (`firewall_use_current_ip = true`), only traffic from your current IP address is allowed. |
 | Possibility to change all CIDRs of the networks                    | ✅      | All network CIDRs (network, node, pod, service) can be customized.                                                                                                                                    |
 | Configure the Cluster optimally to run in the Hetzner Cloud        | ✅      | This includes manual configuration of the network devices and not via DHCP, provisioning of Floating IPs (VIP), etc.                                                                                  |
 
@@ -91,6 +91,14 @@ This repository contains a Terraform module for creating a Kubernetes cluster wi
 - [Validates and approves node CSRs](https://github.com/siderolabs/talos-cloud-controller-manager?tab=readme-ov-file#node-certificate-approval).
 - In DaemonSet mode: CCM will use hostNetwork and current node to access kubernetes/talos API
 
+### [Tailscale](https://tailscale.com/) (Optional)
+
+- The Talos Image **MUST** be created with the [tailscale extension](https://github.com/siderolabs/extensions/blob/main/network/tailscale/README.md) when `tailscale.enabled` is set to true.
+- Tailscale can be enabled as a system extension on all nodes
+- Provides secure, encrypted networking between your nodes and other devices in your Tailscale network
+- Makes cluster nodes accessible via their Tailscale IPs from anywhere
+- Requires a valid Tailscale auth key to be provided in the configuration
+
 ### [Flux](https://fluxcd.io/)
 
 - **Flux Operator:** Deploys the Flux Operator which provides the core Flux functionality for GitOps workflows.
@@ -131,7 +139,7 @@ This module uses the following Terraform providers:
 
 > [!TIP]
 > If you don't have a Hetzner account yet, you are welcome to use
-> this [Hetzner Cloud Referral Link](https://hetzner.cloud/?ref=6Q6Q6Q6Q6Q6Q) to claim 20€ credit and support
+> this [Hetzner Cloud Referral Link](https://hetzner.cloud/?ref=9EF3RYocQW8y) to claim 20€ credit and support
 > this project.
 
 - Create a new project in the Hetzner Cloud Console
@@ -174,12 +182,10 @@ module "talos" {
   talos_version = "v1.11.0" # The version of talos features to use in generated machine configurations
 
   hcloud_token            = "your-hcloud-token"
-  # If true, the current IPv4 address will be added as a source for the firewall rules.
+  # If true, the current IP address will be used as the source for the firewall rules.
   # ATTENTION: to determine the current IP, a request to a public service (https://ipv4.icanhazip.com) is made.
-  # You can also enable IPv6 detection with firewall_use_current_ipv6 = true
-  # Firewall sources are additive - manual IPs specified in firewall_kube_api_source and firewall_talos_api_source
-  # will be combined with automatically detected current IPs.
-  firewall_use_current_ipv4 = true
+  # If false, you have to provide your public IP address (as list) in the variable `firewall_kube_api_source` and `firewall_talos_api_source`.
+  firewall_use_current_ip = true
 
   cluster_name    = "dummy.com"
   datacenter_name = "fsn1-dc14"
@@ -209,8 +215,7 @@ module "talos" {
   cluster_domain   = "cluster.dummy.com.local"
   cluster_api_host = "kube.dummy.com"
 
-  firewall_use_current_ipv4 = false
-  firewall_use_current_ipv6 = false
+  firewall_use_current_ip = false
   firewall_kube_api_source = ["your-ip"]
   firewall_talos_api_source = ["your-ip"]
 
@@ -227,6 +232,12 @@ module "talos" {
   node_ipv4_cidr    = "10.0.1.0/24"
   pod_ipv4_cidr     = "10.0.16.0/20"
   service_ipv4_cidr = "10.0.8.0/21"
+
+  # Enable Tailscale integration
+  tailscale = {
+    enabled  = true
+    auth_key = "tskey-auth-xxxxxxxxxxxx" # Your Tailscale auth key
+  }
 }
 ```
 
@@ -316,6 +327,27 @@ e.g., `~/.kube/config`, `~/.talos/config`).
 
 ## Additional Configuration Examples
 
+### Tailscale Integration
+
+This module supports configuring Tailscale on your cluster nodes, which provides secure networking capabilities:
+
+```hcl
+tailscale = {
+  enabled  = true
+  auth_key = "tskey-auth-xxxxxxxxxxxx" # Your Tailscale auth key
+}
+```
+
+When Tailscale is enabled:
+- Each node will run Tailscale as a system extension
+- Nodes will automatically connect to your Tailscale network
+- Cilium's loadBalancer acceleration is set to "best-effort" mode for compatibility with Tailscale
+- You can access your cluster nodes directly via their Tailscale IPs
+
+> [!NOTE]
+> You must provide a valid Tailscale auth key when enabling this feature. Auth keys can be generated in the Tailscale admin console.
+> For more information, see the [Tailscale documentation on authentication keys](https://tailscale.com/kb/1085/auth-keys/).
+
 ### Kubelet Extra Args
 
 ```hcl
@@ -354,14 +386,14 @@ kernel_modules_to_load = [
 
 The firewall system now supports additive source IP configuration:
 
-- **Automatic IP Detection**: Use `firewall_use_current_ipv4 = true` and/or `firewall_use_current_ipv6 = true` to automatically detect and add your current public IP addresses to the firewall rules.
+- **Automatic IP Detection**: Use `firewall_use_current_ip = true` to automatically detect and add your current public IP addresses to the firewall rules.
 - **Manual IP Specification**: Use `firewall_kube_api_source` and `firewall_talos_api_source` to specify additional IP addresses or CIDR ranges that should have access.
 - **Additive Behavior**: When both automatic detection and manual specification are used, the firewall rules combine all sources. This means you can have both your current IP (automatically detected) and additional IPs (manually specified) in the same firewall rule.
 
 Example configuration:
 ```hcl
-# Enable automatic IPv4 detection
-firewall_use_current_ipv4 = true
+# Enable automatic IP detection
+firewall_use_current_ip = true
 
 # Add additional IPs for Kubernetes API access
 firewall_kube_api_source = ["203.0.113.0/24", "198.51.100.50/32"]
@@ -423,7 +455,7 @@ To upgrade your Kubernetes cluster, you must use the `talosctl upgrade-k8s` comm
   This should be the `cluster_api_host` you configured,
   or the public IP address of your Floating IP/first control plane node.
 - **Firewall Access:**
-  Ensure your firewall rules (configured via `firewall_use_current_ipv4`, `firewall_use_current_ipv6` or `firewall_talos_api_source`)
+  Ensure your firewall rules (configured via `firewall_use_current_ip` or `firewall_talos_api_source`)
   allow access to the Talos API port (default 50000) on your control plane nodes from where you are running `talosctl`.
   Connectivity issues (e.g., `i/o timeout`) can occur if this port is blocked.
 

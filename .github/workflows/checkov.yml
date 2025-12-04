@@ -31,10 +31,10 @@ jobs:
     # Steps represent a sequence of tasks that will be executed as part of the job
     steps:
       # Checks-out your repository under $GITHUB_WORKSPACE, so follow-up steps can access it
-      - uses: actions/checkout@08c6903cd8c0fde910a37f88322edcfb5dd907a8 # v5.0.0
+      - uses: actions/checkout@8e8c483db84b4bee98b60c0593521ed34d9990e8 # v6.0.1
 
       - name: Checkov GitHub Action
-        uses: bridgecrewio/checkov-action@cba89e33f08479973cadc681333ffe84f7c8e824 # v12.3064.0
+        uses: bridgecrewio/checkov-action@02a4c5d6a02367e5ea493c34c26b094302fd3f61 # v12.3075.0
         with:
           # This will add both a CLI output to the console and create a results.sarif file
           output_format: cli,sarif
@@ -42,7 +42,7 @@ jobs:
           download_external_modules: true
 
       - name: Upload SARIF file
-        uses: github/codeql-action/upload-sarif@f443b600d91635bebf5b0d9ebc620189c0d6fba5 # v4.30.8
+        uses: github/codeql-action/upload-sarif@fe4161a26a8629af62121b670040955b330f9af2 # v4.31.6
 
         # Results are generated only on a success or failure
         # this is required since GitHub by default won't run the next step
