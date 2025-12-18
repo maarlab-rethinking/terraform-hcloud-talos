@@ -69,12 +69,12 @@ resource "helm_release" "flux_instance" {
     ], var.flux_secret_username != null && var.flux_secret_password != null ? [
     {
       name  = "instance.sync.pullSecret"
-      value = kubernetes_secret.flux_secret[0].metadata[0].name
+      value = kubernetes_secret_v1.flux_secret[0].metadata[0].name
     }
   ] : []) : null
 }
 
-resource "kubernetes_secret" "flux_secret" {
+resource "kubernetes_secret_v1" "flux_secret" {
   count      = var.flux_secret_username == null || var.flux_secret_password == null ? 0 : 1
   depends_on = [helm_release.flux_operator]
 
