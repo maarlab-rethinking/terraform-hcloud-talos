@@ -1,11 +1,17 @@
 branches:
+  - name: "release" # dummy branch
+
   - name: "+([0-9])?(.{+([0-9]),x}).x"
     channel: "latest"
+    prerelease: "maarlab"
+
   - name: "main"
     channel: "latest"
+    prerelease: "maarlab" # vX.Y.Z-maarlab.N
+
   - name: "next"
     channel: "next"
-    prerelease: true
+    prerelease: "maarlab-next" # vX.Y.Z-maarlab-next.N
 
 plugins:
   - "@semantic-release/commit-analyzer"
