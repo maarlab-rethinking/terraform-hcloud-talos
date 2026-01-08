@@ -255,7 +255,7 @@ variable "worker_count" {
 
 variable "worker_server_type" {
   type        = string
-  default     = "cpx11"
+  default     = "cpx22"
   description = <<EOF
     DEPRECATED: Use worker_nodes instead. The server type to use for the worker nodes.
     Possible values:
