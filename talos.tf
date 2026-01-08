@@ -73,7 +73,7 @@ locals {
 }
 
 data "talos_machine_configuration" "control_plane" {
-  for_each           = { for control_plane in local.control_planes : control_plane.name => control_plane }
+  for_each           = { for control_plane in local.merged_control_planes : control_plane.name => control_plane }
   talos_version      = var.talos_version
   cluster_name       = var.cluster_name
   cluster_endpoint   = local.cluster_endpoint_url_internal
@@ -86,7 +86,7 @@ data "talos_machine_configuration" "control_plane" {
 }
 
 data "talos_machine_configuration" "worker" {
-  for_each           = { for worker in local.workers : worker.name => worker }
+  for_each           = { for worker in local.merged_workers : worker.name => worker }
   talos_version      = var.talos_version
   cluster_name       = var.cluster_name
   cluster_endpoint   = local.cluster_endpoint_url_internal
