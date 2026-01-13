@@ -238,7 +238,6 @@ variable "control_plane_allow_schedule" {
   description = <<EOF
     If true, control plane nodes will be schedulable (i.e., can run workloads).
     If false (default), control plane nodes will be tainted to prevent scheduling of regular workloads.
-    Note: If you set worker_count to 0, control plane nodes will automatically be schedulable regardless of this setting.
   EOF
 }
 
