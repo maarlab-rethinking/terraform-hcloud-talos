@@ -7,7 +7,51 @@ resource "helm_release" "flux_operator" {
   chart            = "flux-operator"
   create_namespace = true
   version          = var.flux_operator_version
-  values           = var.flux_operator_values
+  values = concat(
+    var.flux_operator_values != null ? var.flux_operator_values : [],
+    local.total_worker_count == 0 ? [yamlencode({
+      tolerations = [
+        {
+          key      = "node-role.kubernetes.io/control-plane"
+          operator = "Exists"
+          effect   = "NoSchedule"
+        }
+      ]
+    })] : []
+  )
+}
+
+locals {
+  flux_instance_default_values = {
+    instance = {
+      components = [
+        "source-controller",
+        "kustomize-controller",
+        "helm-controller",
+        "notification-controller",
+        "image-reflector-controller",
+        "image-automation-controller"
+      ]
+      sync = merge({
+        kind = "GitRepository"
+        url  = var.flux_bootstrap_url
+        ref  = "refs/heads/${var.flux_branch}"
+        path = var.flux_cluster_path
+        }, var.flux_secret_username != null && var.flux_secret_password != null ? {
+        pullSecret = try(kubernetes_secret_v1.flux_secret[0].metadata[0].name, "")
+      } : {})
+      distribution = {
+        artifact = "oci://ghcr.io/controlplaneio-fluxcd/flux-operator-manifests:v${var.flux_operator_version}"
+      }
+      tolerations = local.total_worker_count == 0 ? [
+        {
+          key      = "node-role.kubernetes.io/control-plane"
+          operator = "Exists"
+          effect   = "NoSchedule"
+        }
+      ] : []
+    }
+  }
 }
 
 resource "helm_release" "flux_instance" {
@@ -20,58 +64,7 @@ resource "helm_release" "flux_instance" {
   chart      = "flux-instance"
   version    = var.flux_instance_version
 
-  values = var.flux_instance_values
-  set = var.flux_instance_values == null && var.flux_bootstrap_url != null ? concat([
-    {
-      name  = "instance.components[0]"
-      value = "source-controller"
-    },
-    {
-      name  = "instance.components[1]"
-      value = "kustomize-controller"
-    },
-    {
-      name  = "instance.components[2]"
-      value = "helm-controller"
-    },
-    {
-      name  = "instance.components[3]"
-      value = "notification-controller"
-    },
-    {
-      name  = "instance.components[4]"
-      value = "image-reflector-controller"
-    },
-    {
-      name  = "instance.components[5]"
-      value = "image-automation-controller"
-    },
-    {
-      name  = "instance.sync.kind"
-      value = "GitRepository"
-    },
-    {
-      name  = "instance.sync.url"
-      value = var.flux_bootstrap_url
-    },
-    {
-      name  = "instance.sync.ref"
-      value = "refs/heads/${var.flux_branch}"
-    },
-    {
-      name  = "instance.sync.path"
-      value = var.flux_cluster_path
-    },
-    {
-      name  = "instance.distribution.artifact"
-      value = "oci://ghcr.io/controlplaneio-fluxcd/flux-operator-manifests:v${var.flux_operator_version}"
-    }
-    ], var.flux_secret_username != null && var.flux_secret_password != null ? [
-    {
-      name  = "instance.sync.pullSecret"
-      value = kubernetes_secret_v1.flux_secret[0].metadata[0].name
-    }
-  ] : []) : null
+  values = var.flux_instance_values != null ? var.flux_instance_values : [yamlencode(local.flux_instance_default_values)]
 }
 
 resource "kubernetes_secret_v1" "flux_secret" {
