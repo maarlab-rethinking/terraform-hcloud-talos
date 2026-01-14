@@ -169,7 +169,7 @@ locals {
         externalCloudProvider = {
           enabled = true
           manifests = [
-            "https://raw.githubusercontent.com/siderolabs/talos-cloud-controller-manager/v1.6.0/docs/deploy/cloud-controller-manager-daemonset.yml"
+            "https://raw.githubusercontent.com/siderolabs/talos-cloud-controller-manager/${regex("^v\\d+\\.\\d+", var.talos_version)}.0/docs/deploy/cloud-controller-manager-daemonset.yml"
           ]
         }
       }
