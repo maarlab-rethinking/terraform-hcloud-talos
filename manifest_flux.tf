@@ -43,13 +43,24 @@ locals {
       distribution = {
         artifact = "oci://ghcr.io/controlplaneio-fluxcd/flux-operator-manifests:v${var.flux_operator_version}"
       }
-      tolerations = local.total_worker_count == 0 ? [
-        {
-          key      = "node-role.kubernetes.io/control-plane"
-          operator = "Exists"
-          effect   = "NoSchedule"
-        }
-      ] : []
+
+      kustomize = {
+        patches = local.total_worker_count == 0 ? [
+          {
+            target = {
+              kind = "Deployment"
+            }
+            patch = <<EOF
+- op: add
+  path: /spec/template/spec/tolerations
+  value:
+    - key: "node-role.kubernetes.io/control-plane"
+      operator: "Exists"
+      effect: "NoSchedule"
+EOF
+          }
+        ] : []
+      }
     }
   }
 }
