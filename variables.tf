@@ -506,7 +506,7 @@ variable "deploy_prometheus_operator_crds" {
 
 variable "flux_operator_version" {
   type        = string
-  default     = "0.27.0"
+  default     = "0.40.0"
   description = "The version of the Flux Operator to deploy."
 }
 
@@ -526,7 +526,7 @@ variable "flux_operator_values" {
 
 variable "flux_instance_version" {
   type        = string
-  default     = "0.27.0"
+  default     = "0.40.0"
   description = "The version of the Flux Instance to deploy."
 }
 
