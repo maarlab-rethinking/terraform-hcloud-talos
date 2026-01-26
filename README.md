@@ -76,6 +76,11 @@ This repository contains a Terraform module for creating a Kubernetes cluster wi
 > [!IMPORTANT]
 > The Cilium version (`cilium_version`) has to be compatible with the Kubernetes (`kubernetes_version`) version.
 
+> [!TIP]
+> After initial cluster bootstrap, you can set `deploy_cilium = false` (and `deploy_prometheus_operator_crds = false` if you used it) to hand off management to GitOps tools (e.g., Argo CD, Flux).
+> Run `terraform apply` once after toggling: Terraform removes these resources from state without deleting them from the cluster.
+> This works because the module uses `kubectl_manifest` with `apply_only = true`, so Terraform does not delete these manifests on destroy.
+
 ### [Hcloud Cloud Controller Manager](https://github.com/hetznercloud/hcloud-cloud-controller-manager)
 
 - Updates the `Node` objects with information about the server from the Cloud , like instance Type, Location,
@@ -84,6 +89,11 @@ This repository contains a Terraform module for creating a Kubernetes cluster wi
 - Routes traffic to the pods through Hetzner Cloud Networks. Removes one layer of indirection.
 - Watches Services with `type: LoadBalancer` and creates Hetzner Cloud Load Balancers for them, adds Kubernetes
   Nodes as targets for the Load Balancer.
+
+> [!TIP]
+> After initial cluster bootstrap, you can set `deploy_hcloud_ccm = false` to hand off management to GitOps tools (e.g., Argo CD, Flux).
+> Run `terraform apply` once after toggling: Terraform removes these resources from state without deleting them from the cluster.
+> This works because the module uses `kubectl_manifest` with `apply_only = true`, so Terraform does not delete these manifests on destroy.
 
 ### [Talos Cloud Controller Manager](https://github.com/siderolabs/talos-cloud-controller-manager)
 

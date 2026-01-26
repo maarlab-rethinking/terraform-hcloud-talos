@@ -1,4 +1,5 @@
 resource "helm_release" "hcloud_ccm" {
+  count     = var.deploy_hcloud_ccm ? 1 : 0
   name      = "hcloud-cloud-controller-manager"
   namespace = "kube-system"
 

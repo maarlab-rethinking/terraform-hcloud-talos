@@ -32,7 +32,7 @@ jobs:
           - version: ~1.9.0
     steps:
       - name: Checkout
-        uses: actions/checkout@8e8c483db84b4bee98b60c0593521ed34d9990e8 # v6.0.1
+        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
         with:
           ref: refs/pull/${{ github.event.pull_request.number }}/merge
       - name: Configure Terraform plugin cache
@@ -40,7 +40,7 @@ jobs:
           echo 'plugin_cache_dir = "$HOME/.terraform.d/plugin-cache"' > ~/.terraformrc
           mkdir -p ~/.terraform.d/plugin-cache
       - name: Cache Terraform
-        uses: actions/cache@9255dc7a253b0ccc959486e2bca901246202afeb # v5.0.1
+        uses: actions/cache@8b402f58fbc84540c8b491a91e594a4576fec3d7 # v5.0.2
         with:
           path: ~/.terraform.d/plugin-cache
           key: "${{ runner.os }}-terraform-${{ hashFiles(format('{0}/.terraform.lock.hcl', matrix.version)) }}"
@@ -136,7 +136,7 @@ jobs:
       pull-requests: write # for create or update comment
     steps:
       - name: Checkout
-        uses: actions/checkout@8e8c483db84b4bee98b60c0593521ed34d9990e8 # v6.0.1
+        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
         with:
           fetch-depth: 0
           ref: refs/pull/${{ github.event.pull_request.number }}/merge

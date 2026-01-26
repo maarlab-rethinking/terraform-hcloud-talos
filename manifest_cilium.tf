@@ -7,7 +7,7 @@ resource "helm_release" "cilium" {
   version    = var.cilium_version
 
   values = var.cilium_values
-  set = var.cilium_values == null ? concat([
+  set = var.deploy_cilium && var.cilium_values == null ? concat([
     {
       name  = "operator.replicas"
       value = var.control_plane_count > 1 ? 2 : 1
@@ -105,6 +105,7 @@ data "helm_template" "prometheus_operator_crds" {
   chart        = "prometheus-operator-crds"
   name         = "prometheus-operator-crds"
   repository   = "https://prometheus-community.github.io/helm-charts"
+  version      = var.prometheus_operator_crds_version
   kube_version = var.kubernetes_version
 }
 
