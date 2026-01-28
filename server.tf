@@ -139,7 +139,8 @@ resource "hcloud_server" "control_planes" {
   lifecycle {
     ignore_changes = [
       user_data,
-      image
+      image,
+      network
     ]
   }
 }
@@ -185,7 +186,8 @@ resource "hcloud_server" "workers" {
   lifecycle {
     ignore_changes = [
       user_data,
-      image
+      image,
+      network
     ]
   }
 }
@@ -237,7 +239,8 @@ resource "hcloud_server" "workers_new" {
   lifecycle {
     ignore_changes = [
       user_data,
-      image
+      image,
+      network
     ]
   }
 }
