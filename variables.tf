@@ -545,7 +545,7 @@ variable "deploy_hcloud_ccm" {
 
 variable "flux_operator_version" {
   type        = string
-  default     = "0.40.0"
+  default     = "0.42.1"
   description = "The version of the Flux Operator to deploy."
 }
 
@@ -565,7 +565,7 @@ variable "flux_operator_values" {
 
 variable "flux_instance_version" {
   type        = string
-  default     = "0.40.0"
+  default     = "0.42.1"
   description = "The version of the Flux Instance to deploy."
 }
 
