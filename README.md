@@ -3,6 +3,13 @@
   <img src="https://github.com/hcloud-talos/terraform-hcloud-talos/blob/main/.idea/icon.png?raw=true" alt="Terraform - Hcloud - Talos" width="200"/>
   <h1 style="margin-top: 0; padding-top: 0;">Terraform - Hcloud - Talos</h1>
   <img alt="GitHub Release" src="https://img.shields.io/github/v/release/hcloud-talos/terraform-hcloud-talos?logo=github">
+  <p>
+    <a href="https://hetzner.cloud/?ref=9EF3RYocQW8y">New to Hetzner? Get 20€ credit</a>
+  </p>
+  <p>
+    <a href="https://www.buymeacoffee.com/mrclrchtr"><img src="https://img.buymeacoffee.com/button-api/?text=Buy%20me%20a%20coffee&emoji=&slug=mrclrchtr&button_colour=FFDD00&font_colour=000000&font_family=Cookie&outline_colour=000000&coffee_colour=ffffff" alt="Buy me a coffee" /></a>
+  </p>
+  <p>If this module saved you time or money, consider supporting ongoing maintenance.</p>
 </div>
 
 ---
@@ -148,9 +155,8 @@ This module uses the following Terraform providers:
 ### Hetzner Cloud
 
 > [!TIP]
-> If you don't have a Hetzner account yet, you are welcome to use
-> this [Hetzner Cloud Referral Link](https://hetzner.cloud/?ref=9EF3RYocQW8y) to claim 20€ credit and support
-> this project.
+> New to Hetzner Cloud? Use this [referral link](https://hetzner.cloud/?ref=9EF3RYocQW8y) to get **20€ credit** and
+> support this project.
 
 - Create a new project in the Hetzner Cloud Console
 - Create a new API token in the project
@@ -486,6 +492,18 @@ Refer to the [official Talos documentation on upgrading Kubernetes](https://www.
   by `registry.k8s.io` affecting some Hetzner IP ranges.
   See [#46](https://github.com/hcloud-talos/terraform-hcloud-talos/issues/46)
   and [registry.k8s.io #138](https://github.com/kubernetes/registry.k8s.io/issues/138).
+
+## Support
+
+If this module saved you time or helped you run Talos on Hetzner more reliably, consider supporting ongoing
+maintenance:
+
+- [GitHub Sponsors](https://github.com/sponsors/hcloud-talos)
+- [Buy Me a Coffee](https://buymeacoffee.com/mrclrchtr)
+- [Hetzner Cloud referral (20€ credit)](https://hetzner.cloud/?ref=9EF3RYocQW8y)
+
+Sponsorship is about sustainability and public appreciation, not a paid support contract or SLA. Sponsors can be
+acknowledged publicly via GitHub Sponsors.
 
 ## Credits
 
