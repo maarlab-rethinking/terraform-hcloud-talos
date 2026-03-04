@@ -614,6 +614,12 @@ variable "flux_secret_password" {
   sensitive   = true
 }
 
+variable "flux_enable_service_monitors" {
+  type        = bool
+  default     = false
+  description = "Enable ServiceMonitor for Flux."
+}
+
 variable "hcloud_ccm_version" {
   type        = string
   default     = null

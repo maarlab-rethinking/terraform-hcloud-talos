@@ -17,6 +17,11 @@ resource "helm_release" "flux_operator" {
           effect   = "NoSchedule"
         }
       ]
+    })] : [],
+    var.flux_enable_service_monitors ? [yamlencode({
+      serviceMonitor = {
+        create = true
+      }
     })] : []
   )
 }
