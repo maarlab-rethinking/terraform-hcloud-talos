@@ -93,6 +93,10 @@ resource "helm_release" "cilium" {
     {
       name  = "egressGateway.enabled"
       value = var.cilium_enable_egress_gateway
+    },
+    {
+      name  = "gatewayAPI.enabled"
+      value = var.cilium_enable_gateway_api
     }
     ],
   ) : null

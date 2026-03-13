@@ -482,6 +482,12 @@ variable "cilium_enable_egress_gateway" {
   description = "Enable the egress gateway for Cilium."
 }
 
+variable "cilium_enable_gateway_api" {
+  type        = bool
+  default     = false
+  description = "Enable Gateway API support in Cilium."
+}
+
 variable "cilium_enable_encryption" {
   type        = bool
   default     = false
