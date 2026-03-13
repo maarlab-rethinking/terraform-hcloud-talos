@@ -54,6 +54,13 @@ resource "hcloud_floating_ip_assignment" "this" {
   depends_on = [
     hcloud_server.control_planes,
   ]
+
+  lifecycle {
+    ignore_changes = [
+      floating_ip_id,
+      server_id
+    ]
+  }
 }
 
 resource "hcloud_primary_ip" "control_plane_ipv4" {
