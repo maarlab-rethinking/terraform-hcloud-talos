@@ -488,6 +488,12 @@ variable "cilium_enable_gateway_api" {
   description = "Enable Gateway API support in Cilium."
 }
 
+variable "cilium_enable_gateway_api_proxy_protocol" {
+  type        = bool
+  default     = false
+  description = "Enable Gateway API Proxy Protocol support in Cilium."
+}
+
 variable "cilium_enable_encryption" {
   type        = bool
   default     = false

@@ -97,6 +97,10 @@ resource "helm_release" "cilium" {
     {
       name  = "gatewayAPI.enabled"
       value = var.cilium_enable_gateway_api
+    },
+    {
+      name  = "gatewayAPI.enableProxyProtocol"
+      value = var.cilium_enable_gateway_api_proxy_protocol
     }
     ],
   ) : null
