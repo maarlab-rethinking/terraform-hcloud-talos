@@ -1,4 +1,5 @@
 resource "helm_release" "cilium" {
+  count     = var.deploy_cilium ? 1 : 0
   name      = "cilium"
   namespace = "kube-system"
 
@@ -7,7 +8,7 @@ resource "helm_release" "cilium" {
   version    = var.cilium_version
 
   values = var.cilium_values
-  set = var.deploy_cilium && var.cilium_values == null ? concat([
+  set = var.cilium_values == null ? concat([
     {
       name  = "operator.replicas"
       value = var.control_plane_count > 1 ? 2 : 1
